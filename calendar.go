@@ -47,3 +47,7 @@ func TimeInDay(t time.Time) time.Duration {
 		time.Second*time.Duration(t.Second()) +
 		time.Duration(t.Nanosecond())
 }
+
+func IsToday(t time.Time) bool {
+	return DateWithTime(t).IsToday()
+}

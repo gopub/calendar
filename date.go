@@ -1,6 +1,9 @@
 package calendar
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Date struct {
 	year    int
@@ -16,7 +19,7 @@ func NewDate(year, month, day int) *Date {
 	return DateWithTime(t)
 }
 
-func DateWithUnixSeconds(seconds int64) *Date {
+func DateWithUnix(seconds int64) *Date {
 	t := time.Unix(seconds, 0)
 	return DateWithTime(t)
 }
@@ -52,15 +55,15 @@ func (d *Date) Unix() int64 {
 }
 
 func (d *Date) Add(years, months, days int) *Date {
-	return NewDate(d.year+years, d.month+months, d.day+days)
+	return DateWithTime(d.t.AddDate(years, months, days))
 }
 
 func (d *Date) Next() *Date {
-	return d.Add(0, 0, 1)
+	return DateWithTime(d.t.Add(time.Hour * 24))
 }
 
 func (d *Date) Prev() *Date {
-	return d.Add(0, 0, -1)
+	return DateWithTime(d.t.Add(-time.Hour * 24))
 }
 
 func (d *Date) Equals(date *Date) bool {
@@ -68,7 +71,19 @@ func (d *Date) Equals(date *Date) bool {
 }
 
 func (d *Date) Before(date *Date) bool {
-	return d.year < date.year || d.month < date.month || d.day < date.day
+	if d.year < date.year {
+		return true
+	}
+	if d.year > date.year {
+		return false
+	}
+	if d.month < date.month {
+		return true
+	}
+	if d.month > date.month {
+		return false
+	}
+	return d.day < date.day
 }
 
 func (d *Date) After(date *Date) bool {
@@ -81,4 +96,12 @@ func (d *Date) Start() time.Time {
 
 func (d *Date) End() time.Time {
 	return time.Date(d.year, time.Month(d.month), d.day, 23, 59, 59, 999999999, d.t.Location())
+}
+
+func (d *Date) IsToday() bool {
+	return DateWithTime(time.Now()).Equals(d)
+}
+
+func (d *Date) String() string {
+	return fmt.Sprintf("%d-%02d-%02d", d.year, d.month, d.day)
 }
