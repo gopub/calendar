@@ -1,10 +1,15 @@
 package timex
 
 import (
+	"database/sql"
+	"database/sql/driver"
 	"encoding"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
+
+	"github.com/gopub/conv"
 )
 
 var (
@@ -87,6 +92,57 @@ func (r *Range) UnmarshalText(text []byte) error {
 	r.start = rr.Start
 	r.end = rr.End
 	return nil
+}
+
+var (
+	_ driver.Valuer = (*Range)(nil)
+	_ sql.Scanner   = (*Range)(nil)
+)
+
+const sqlTimeLayout = "2006-01-02 15:04:05.999999999-07"
+
+func (r *Range) Scan(src interface{}) error {
+	s, err := conv.ToString(src)
+	if err != nil {
+		return err
+	}
+
+	if s == "" {
+		return nil
+	}
+
+	s = strings.Replace(s, `"`, "", -1)
+
+	if s[0] != '[' {
+		return fmt.Errorf("cannot parse %s", s)
+	}
+
+	if c := s[len(s)-1]; c != ']' {
+		return fmt.Errorf("cannot parse %s", s)
+	}
+
+	s = s[1 : len(s)-1]
+
+	fields := strings.Split(s, ",")
+	if len(fields) != 2 {
+		return fmt.Errorf("parse composite fields %s", s)
+	}
+	r.start, err = time.Parse(sqlTimeLayout, strings.TrimSpace(fields[0]))
+	if err != nil {
+		return fmt.Errorf("parse start %s: %w", fields[0], err)
+	}
+	r.end, err = time.Parse(sqlTimeLayout, strings.TrimSpace(fields[1]))
+	if err != nil {
+		return fmt.Errorf("parse start %s: %w", fields[1], err)
+	}
+	if r.start.After(r.end) {
+		return fmt.Errorf("start %v is after end %v", r.start, r.end)
+	}
+	return nil
+}
+
+func (r Range) Value() (driver.Value, error) {
+	return fmt.Sprintf("[%s, %s]", r.start.Format(sqlTimeLayout), r.end.Format(sqlTimeLayout)), nil
 }
 
 type DailyRange struct {
