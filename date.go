@@ -34,6 +34,10 @@ func DateWithTime(t time.Time) *Date {
 	}
 }
 
+func Today() *Date {
+	return DateWithTime(time.Now())
+}
+
 func (d *Date) Year() int {
 	return d.year
 }
