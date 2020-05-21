@@ -129,12 +129,44 @@ func (r *DailyRange) Duration() time.Duration {
 	return r.end - r.start + time.Minute
 }
 
+func (r *DailyRange) IsAllDay() bool {
+	return r.end-r.start == time.Hour*24
+}
+
+func (r *DailyRange) StartsBefore(dr *DailyRange) bool {
+	if r.date.Before(dr.date) {
+		return true
+	}
+
+	if r.date.After(dr.date) {
+		return false
+	}
+
+	return r.start < dr.start
+}
+
+func (r *DailyRange) StartsAfter(dr *DailyRange) bool {
+	return dr.StartsBefore(r)
+}
+
+func (r *DailyRange) EndsBefore(dr *DailyRange) bool {
+	if r.date.Before(dr.date) {
+		return true
+	}
+
+	if r.date.After(dr.date) {
+		return false
+	}
+
+	return r.end < dr.end
+}
+
+func (r *DailyRange) EndsAfter(dr *DailyRange) bool {
+	return dr.EndsBefore(r)
+}
+
 func (r *DailyRange) String() string {
 	sh, sm := r.Start()
 	eh, em := r.End()
 	return fmt.Sprintf("%s %02d:%02d-%02d:%02d", r.date, sh, sm, eh, em)
-}
-
-func (r *DailyRange) IsAllDay() bool {
-	return r.end-r.start == time.Hour*24
 }
