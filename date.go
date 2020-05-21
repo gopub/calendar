@@ -70,6 +70,28 @@ func (d *Date) Prev() *Date {
 	return DateWithTime(d.t.Add(-time.Hour * 24))
 }
 
+func (d *Date) NextWeek() *Date {
+	return DateWithTime(d.t.Add(time.Hour * 24 * 7))
+}
+
+func (d *Date) PrevWeek() *Date {
+	return DateWithTime(d.t.Add(-time.Hour * 24 * 7))
+}
+
+func (d *Date) NextMonth() *Date {
+	if d.month == 12 {
+		return NewDate(d.year+1, 1, d.day)
+	}
+	return d.Add(0, 1, 0)
+}
+
+func (d *Date) PrevMonth() *Date {
+	if d.month == 1 {
+		return NewDate(d.year-1, 12, d.day)
+	}
+	return d.Add(0, -1, 0)
+}
+
 func (d *Date) Equals(date *Date) bool {
 	return d.year == date.year && d.month == date.month && d.day == date.day
 }
