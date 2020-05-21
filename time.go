@@ -51,3 +51,7 @@ func TimeInDay(t time.Time) time.Duration {
 func IsToday(t time.Time) bool {
 	return DateWithTime(t).IsToday()
 }
+
+func Unix(seconds int64) time.Time {
+	return time.Unix(seconds, 0)
+}
