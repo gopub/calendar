@@ -1,8 +1,15 @@
 package calendar
 
 import (
+	"encoding"
+	"encoding/json"
 	"fmt"
 	"time"
+)
+
+var (
+	_ encoding.TextMarshaler   = (*Range)(nil)
+	_ encoding.TextUnmarshaler = (*Range)(nil)
 )
 
 type Range struct {
@@ -20,6 +27,14 @@ func NewRange(start, end time.Time) *Range {
 	}
 }
 
+func (r *Range) Start() time.Time {
+	return r.start
+}
+
+func (r *Range) End() time.Time {
+	return r.end
+}
+
 func (r *Range) Dates() []*Date {
 	start := DateWithTime(r.start)
 	end := DateWithTime(r.end)
@@ -30,9 +45,9 @@ func (r *Range) Dates() []*Date {
 	return l
 }
 
-func (r *Range) DateRanges() []*DateRange {
+func (r *Range) DailyRanges() []*DailyRange {
 	dates := r.Dates()
-	l := make([]*DateRange, len(dates))
+	l := make([]*DailyRange, len(dates))
 	for i, d := range dates {
 		start, end := time.Duration(0), EndOfDay
 		if i == 0 {
@@ -46,13 +61,37 @@ func (r *Range) DateRanges() []*DateRange {
 	return l
 }
 
-type DateRange struct {
+func (r *Range) MarshalText() (text []byte, err error) {
+	var rr struct {
+		Start time.Time `json:"start"`
+		End   time.Time `json:"end"`
+	}
+	rr.Start = r.start
+	rr.End = r.end
+	return json.Marshal(rr)
+}
+
+func (r *Range) UnmarshalText(text []byte) error {
+	var rr struct {
+		Start time.Time `json:"start"`
+		End   time.Time `json:"end"`
+	}
+	err := json.Unmarshal(text, &rr)
+	if err != nil {
+		return err
+	}
+	r.start = rr.Start
+	r.end = rr.End
+	return nil
+}
+
+type DailyRange struct {
 	date  *Date
 	start time.Duration
 	end   time.Duration
 }
 
-func NewDateRange(date *Date, start, end time.Duration) *DateRange {
+func NewDateRange(date *Date, start, end time.Duration) *DailyRange {
 	start = start.Round(time.Minute)
 	end = end.Round(time.Minute)
 	if start < 0 || start > EndOfDay {
@@ -67,35 +106,35 @@ func NewDateRange(date *Date, start, end time.Duration) *DateRange {
 		panic("expect: end - start >= 1m")
 	}
 
-	return &DateRange{
+	return &DailyRange{
 		date:  date,
 		start: start,
 		end:   end,
 	}
 }
 
-func (r *DateRange) Date() *Date {
+func (r *DailyRange) Date() *Date {
 	return r.date
 }
 
-func (r *DateRange) Start() (hour, minute int) {
+func (r *DailyRange) Start() (hour, minute int) {
 	return int(r.start.Hours()), int(r.start.Minutes()) % 60
 }
 
-func (r *DateRange) End() (hour, minute int) {
+func (r *DailyRange) End() (hour, minute int) {
 	return int(r.end.Hours()), int(r.end.Minutes()) % 60
 }
 
-func (r *DateRange) Duration() time.Duration {
+func (r *DailyRange) Duration() time.Duration {
 	return r.end - r.start + time.Minute
 }
 
-func (r *DateRange) String() string {
+func (r *DailyRange) String() string {
 	sh, sm := r.Start()
 	eh, em := r.End()
 	return fmt.Sprintf("%s %02d:%02d-%02d:%02d", r.date, sh, sm, eh, em)
 }
 
-func (r *DateRange) IsAllDay() bool {
+func (r *DailyRange) IsAllDay() bool {
 	return r.end-r.start == time.Hour*24
 }
