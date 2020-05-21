@@ -60,10 +60,10 @@ func (r *Range) DailyRanges() []*DailyRange {
 	for i, d := range dates {
 		start, end := time.Duration(0), EndOfDay
 		if i == 0 {
-			start = TimeInDay(r.start)
+			start = GetDayTime(r.start)
 		}
 		if i == len(dates)-1 {
-			end = TimeInDay(r.end)
+			end = GetDayTime(r.end)
 		}
 		l[i] = NewDateRange(d, start, end)
 	}

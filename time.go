@@ -41,7 +41,7 @@ func EndOfMonth(year, month int) time.Time {
 	return time.Date(year, time.Month(month), LenOfMonth(year, month), 23, 59, 59, 999999999, time.Local)
 }
 
-func TimeInDay(t time.Time) time.Duration {
+func GetDayTime(t time.Time) time.Duration {
 	return time.Hour*time.Duration(t.Hour()) +
 		time.Minute*time.Duration(t.Minute()) +
 		time.Second*time.Duration(t.Second()) +
