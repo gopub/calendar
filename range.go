@@ -18,13 +18,17 @@ type Range struct {
 }
 
 func NewRange(start, end time.Time) *Range {
+	r := new(Range)
+	r.Set(start, end)
+	return r
+}
+
+func (r *Range) Set(start, end time.Time) {
 	if !start.Before(end) {
 		panic("start must be less than end")
 	}
-	return &Range{
-		start: start,
-		end:   end,
-	}
+	r.start = start
+	r.end = end
 }
 
 func (r *Range) Start() time.Time {
