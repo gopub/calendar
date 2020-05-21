@@ -1,4 +1,4 @@
-package calendar
+package timex
 
 import (
 	"fmt"
