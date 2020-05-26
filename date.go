@@ -30,7 +30,7 @@ func DateWithTime(t time.Time) *Date {
 		month:   int(t.Month()),
 		day:     t.Day(),
 		weekday: int(t.Weekday()),
-		t:       t,
+		t:       time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location()),
 	}
 }
 
@@ -67,27 +67,15 @@ func (d *Date) Equals(date *Date) bool {
 }
 
 func (d *Date) Before(date *Date) bool {
-	if d.year < date.year {
-		return true
-	}
-	if d.year > date.year {
-		return false
-	}
-	if d.month < date.month {
-		return true
-	}
-	if d.month > date.month {
-		return false
-	}
-	return d.day < date.day
+	return d.Unix() < date.Unix()
 }
 
 func (d *Date) After(date *Date) bool {
-	return date.Before(d)
+	return d.Unix() > date.Unix()
 }
 
 func (d *Date) Start() time.Time {
-	return time.Date(d.year, time.Month(d.month), d.day, 0, 0, 0, 0, d.t.Location())
+	return d.t
 }
 
 func (d *Date) End() time.Time {
