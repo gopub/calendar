@@ -54,9 +54,9 @@ func (r *Range) Dates() []*Date {
 	return l
 }
 
-func (r *Range) DailyRanges() []*DailyRange {
+func (r *Range) DailyRanges() []*DayTimeRange {
 	dates := r.Dates()
-	l := make([]*DailyRange, len(dates))
+	l := make([]*DayTimeRange, len(dates))
 	for i, d := range dates {
 		start, end := time.Duration(0), EndOfDay
 		if i == 0 {
@@ -145,13 +145,13 @@ func (r Range) Value() (driver.Value, error) {
 	return fmt.Sprintf("[%s, %s]", r.start.Format(sqlTimeLayout), r.end.Format(sqlTimeLayout)), nil
 }
 
-type DailyRange struct {
+type DayTimeRange struct {
 	date  *Date
 	start time.Duration
 	end   time.Duration
 }
 
-func NewDateRange(date *Date, start, end time.Duration) *DailyRange {
+func NewDateRange(date *Date, start, end time.Duration) *DayTimeRange {
 	start = start.Round(time.Minute)
 	end = end.Round(time.Minute)
 	if start < 0 || start > EndOfDay {
@@ -166,34 +166,34 @@ func NewDateRange(date *Date, start, end time.Duration) *DailyRange {
 		panic("expect: end - start >= 1m")
 	}
 
-	return &DailyRange{
+	return &DayTimeRange{
 		date:  date,
 		start: start,
 		end:   end,
 	}
 }
 
-func (r *DailyRange) Date() *Date {
+func (r *DayTimeRange) Date() *Date {
 	return r.date
 }
 
-func (r *DailyRange) Start() (hour, minute int) {
+func (r *DayTimeRange) Start() (hour, minute int) {
 	return int(r.start.Hours()), int(r.start.Minutes()) % 60
 }
 
-func (r *DailyRange) End() (hour, minute int) {
+func (r *DayTimeRange) End() (hour, minute int) {
 	return int(r.end.Hours()), int(r.end.Minutes()) % 60
 }
 
-func (r *DailyRange) Duration() time.Duration {
+func (r *DayTimeRange) Duration() time.Duration {
 	return r.end - r.start + time.Minute
 }
 
-func (r *DailyRange) IsAllDay() bool {
+func (r *DayTimeRange) IsAllDay() bool {
 	return r.end-r.start == time.Hour*24
 }
 
-func (r *DailyRange) StartsBefore(dr *DailyRange) bool {
+func (r *DayTimeRange) StartsBefore(dr *DayTimeRange) bool {
 	if r.date.Before(dr.date) {
 		return true
 	}
@@ -205,11 +205,11 @@ func (r *DailyRange) StartsBefore(dr *DailyRange) bool {
 	return r.start < dr.start
 }
 
-func (r *DailyRange) StartsAfter(dr *DailyRange) bool {
+func (r *DayTimeRange) StartsAfter(dr *DayTimeRange) bool {
 	return dr.StartsBefore(r)
 }
 
-func (r *DailyRange) EndsBefore(dr *DailyRange) bool {
+func (r *DayTimeRange) EndsBefore(dr *DayTimeRange) bool {
 	if r.date.Before(dr.date) {
 		return true
 	}
@@ -221,11 +221,11 @@ func (r *DailyRange) EndsBefore(dr *DailyRange) bool {
 	return r.end < dr.end
 }
 
-func (r *DailyRange) EndsAfter(dr *DailyRange) bool {
+func (r *DayTimeRange) EndsAfter(dr *DayTimeRange) bool {
 	return dr.EndsBefore(r)
 }
 
-func (r *DailyRange) String() string {
+func (r *DayTimeRange) String() string {
 	sh, sm := r.Start()
 	eh, em := r.End()
 	return fmt.Sprintf("%s %02d:%02d-%02d:%02d", r.date, sh, sm, eh, em)
