@@ -89,3 +89,16 @@ func (d *Date) IsToday() bool {
 func (d *Date) String() string {
 	return fmt.Sprintf("%d-%02d-%02d", d.year, d.month, d.day)
 }
+
+type DateRange struct {
+	Start *Date
+	End   *Date
+}
+
+func (r *DateRange) Len() int {
+	return int(r.Start.t.Sub(r.End.t)/time.Hour*24 + 1)
+}
+
+func (r *DateRange) Includes(d *Date) bool {
+	return d.Unix() >= r.Start.Unix() && d.Unix() <= r.End.Unix()
+}
