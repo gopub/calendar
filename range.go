@@ -54,7 +54,7 @@ func (r *Range) Dates() []*Date {
 	return l
 }
 
-func (r *Range) DailyRanges() []*DayTimeRange {
+func (r *Range) SplitByDay() []*DayTimeRange {
 	dates := r.Dates()
 	l := make([]*DayTimeRange, len(dates))
 	for i, d := range dates {
@@ -65,7 +65,7 @@ func (r *Range) DailyRanges() []*DayTimeRange {
 		if i == len(dates)-1 {
 			end = GetDayTime(r.end)
 		}
-		l[i] = NewDateRange(d, start, end)
+		l[i] = NewDayTimeRange(d, start, end)
 	}
 	return l
 }
@@ -151,7 +151,7 @@ type DayTimeRange struct {
 	end   time.Duration
 }
 
-func NewDateRange(date *Date, start, end time.Duration) *DayTimeRange {
+func NewDayTimeRange(date *Date, start, end time.Duration) *DayTimeRange {
 	start = start.Round(time.Minute)
 	end = end.Round(time.Minute)
 	if start < 0 || start > EndOfDay {
