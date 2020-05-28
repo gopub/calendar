@@ -2,10 +2,6 @@ package timex
 
 import "time"
 
-const (
-	EndOfDay = time.Hour*24 - time.Nanosecond
-)
-
 func IsLeap(year int) bool {
 	return year%4 == 0 && (year%100 != 0 || year%400 == 0)
 }
@@ -52,6 +48,18 @@ func IsToday(t time.Time) bool {
 	return DateWithTime(t).IsToday()
 }
 
+func IsYesterday(t time.Time) bool {
+	return DateWithTime(t).IsYesterday()
+}
+
+func IsTomorrow(t time.Time) bool {
+	return DateWithTime(t).IsTomorrow()
+}
+
 func Unix(seconds int64) time.Time {
 	return time.Unix(seconds, 0)
+}
+
+func EndOfDay(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 999999999, time.Local)
 }

@@ -58,7 +58,7 @@ func (r *Range) SplitByDay() []*DayTimeRange {
 	dates := r.Dates()
 	l := make([]*DayTimeRange, len(dates))
 	for i, d := range dates {
-		start, end := time.Duration(0), EndOfDay
+		start, end := time.Duration(0), 24*time.Hour-time.Nanosecond
 		if i == 0 {
 			start = GetDayTime(r.start)
 		}
@@ -154,16 +154,17 @@ type DayTimeRange struct {
 func NewDayTimeRange(date *Date, start, end time.Duration) *DayTimeRange {
 	start = start.Round(time.Minute)
 	end = end.Round(time.Minute)
-	if start < 0 || start > EndOfDay {
-		panic("start must be in [0, 24h)")
+	endOfDay := time.Hour*24 - time.Nanosecond
+	if start < 0 || start > endOfDay {
+		panic("start must be in [0, 24h): " + fmt.Sprint(start))
 	}
 
-	if end < time.Minute || end > EndOfDay+time.Nanosecond {
-		panic("end must be 0 or in [1m, 24h]: " + fmt.Sprint(end))
+	if end < time.Minute || end > endOfDay {
+		panic("end must be 0 or in [1m, 24h): " + fmt.Sprint(end))
 	}
 
-	if end-start < time.Minute {
-		panic("expect: end - start >= 1m")
+	if end < start {
+		panic("expect: end >= start")
 	}
 
 	return &DayTimeRange{

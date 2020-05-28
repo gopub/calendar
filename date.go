@@ -38,6 +38,14 @@ func Today() *Date {
 	return DateWithTime(time.Now())
 }
 
+func Tomorrow() *Date {
+	return Today().Add(0, 0, 1)
+}
+
+func Yesterday() *Date {
+	return Today().Add(0, 0, -1)
+}
+
 func (d *Date) Year() int {
 	return d.year
 }
@@ -83,7 +91,15 @@ func (d *Date) End() time.Time {
 }
 
 func (d *Date) IsToday() bool {
-	return DateWithTime(time.Now()).Equals(d)
+	return Today().Equals(d)
+}
+
+func (d *Date) IsTomorrow() bool {
+	return Tomorrow().Equals(d)
+}
+
+func (d *Date) IsYesterday() bool {
+	return Yesterday().Equals(d)
 }
 
 func (d *Date) String() string {
