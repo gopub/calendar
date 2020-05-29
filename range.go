@@ -176,20 +176,20 @@ func (r *DayTimeRange) Date() *Date {
 	return r.date
 }
 
-func (r *DayTimeRange) Start() (hour, minute int) {
-	return int(r.start.Hours()), int(r.start.Minutes()) % 60
+func (r *DayTimeRange) Start() time.Duration {
+	return r.start
 }
 
-func (r *DayTimeRange) End() (hour, minute int) {
-	return int(r.end.Hours()), int(r.end.Minutes()) % 60
+func (r *DayTimeRange) End() time.Duration {
+	return r.end
 }
 
 func (r *DayTimeRange) Duration() time.Duration {
-	return r.end - r.start + time.Minute
+	return r.end - r.start + time.Nanosecond
 }
 
 func (r *DayTimeRange) IsAllDay() bool {
-	return r.end-r.start == time.Hour*24
+	return r.Duration() == time.Hour*24
 }
 
 func (r *DayTimeRange) StartsBefore(dr *DayTimeRange) bool {
@@ -225,7 +225,7 @@ func (r *DayTimeRange) EndsAfter(dr *DayTimeRange) bool {
 }
 
 func (r *DayTimeRange) String() string {
-	sh, sm := r.Start()
-	eh, em := r.End()
+	sh, sm := int(r.start.Hours()), int(r.start.Minutes())%60
+	eh, em := int(r.end.Hours()), int(r.end.Minutes())%60
 	return fmt.Sprintf("%s %02d:%02d-%02d:%02d", r.date, sh, sm, eh, em)
 }
