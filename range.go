@@ -152,8 +152,6 @@ type DayTimeRange struct {
 }
 
 func NewDayTimeRange(date *Date, start, end time.Duration) *DayTimeRange {
-	start = start.Round(time.Minute)
-	end = end.Round(time.Minute)
 	endOfDay := time.Hour*24 - time.Nanosecond
 	if start < 0 || start > endOfDay {
 		panic("start must be in [0, 24h): " + fmt.Sprint(start))
