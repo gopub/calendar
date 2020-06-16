@@ -55,14 +55,6 @@ func (r *Range) End() time.Time {
 	return r.end
 }
 
-func (r *Range) StartDate() *Date {
-	return DateWithTime(r.start)
-}
-
-func (r *Range) EndDate() *Date {
-	return DateWithTime(r.end.Add(-time.Nanosecond))
-}
-
 func (r *Range) StartsBefore(ra *Range) bool {
 	return r.start.Before(ra.start)
 }
@@ -84,7 +76,9 @@ func (r *Range) IsAllDay() bool {
 }
 
 func (r *Range) InDay() bool {
-	return r.StartDate().Equals(r.EndDate())
+	y1, m1, d1 := r.start.Date()
+	y2, m2, d2 := r.end.Date()
+	return y1 == y2 && m1 == m2 && d1 == d2
 }
 
 func (r *Range) Dates() []*Date {
