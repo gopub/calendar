@@ -43,3 +43,8 @@ func BeginOfDay(t time.Time) time.Time {
 func EndOfDay(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 999999999, time.Local)
 }
+
+const (
+	Day  = 24 * time.Hour
+	Week = 7 * 24 * time.Hour
+)
