@@ -6,35 +6,11 @@ func IsLeap(year int) bool {
 	return year%4 == 0 && (year%100 != 0 || year%400 == 0)
 }
 
-func LenOfYear(year int) int {
+func NumOfYearDays(year int) int {
 	if IsLeap(year) {
 		return 366
 	}
 	return 365
-}
-
-func LenOfMonth(year int, month int) int {
-	if month == 2 {
-		if IsLeap(year) {
-			return 29
-		}
-		return 28
-	}
-	if month > 7 {
-		month -= 7
-	}
-	if month%2 == 0 {
-		return 30
-	}
-	return 31
-}
-
-func BeginOfMonth(year int, month int) time.Time {
-	return time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
-}
-
-func EndOfMonth(year, month int) time.Time {
-	return time.Date(year, time.Month(month), LenOfMonth(year, month), 23, 59, 59, 999999999, time.Local)
 }
 
 func GetDayTime(t time.Time) time.Duration {
@@ -58,6 +34,10 @@ func IsTomorrow(t time.Time) bool {
 
 func Unix(seconds int64) time.Time {
 	return time.Unix(seconds, 0)
+}
+
+func BeginOfDay(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.Local)
 }
 
 func EndOfDay(t time.Time) time.Time {

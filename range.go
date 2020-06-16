@@ -18,22 +18,33 @@ var (
 )
 
 type Range struct {
-	start time.Time
-	end   time.Time
+	start time.Time // inclusive
+	end   time.Time // exclusive
 }
 
 func NewRange(start, end time.Time) *Range {
-	r := new(Range)
-	r.Set(start, end)
+	r := &Range{
+		start: start,
+		end:   end,
+	}
+	if !r.start.Before(r.end) {
+		panic("timex: start must be before end")
+	}
 	return r
 }
 
-func (r *Range) Set(start, end time.Time) {
-	if !start.Before(end) {
-		panic("start must be less than end")
+func (r *Range) SetStart(t time.Time) {
+	if !t.Before(r.end) {
+		panic("timex: start must be before end")
 	}
-	r.start = start
-	r.end = end
+	r.start = t
+}
+
+func (r *Range) SetEnd(t time.Time) {
+	if !t.After(r.start) {
+		panic("timex: end must be after start")
+	}
+	r.end = t
 }
 
 func (r *Range) Start() time.Time {
@@ -42,6 +53,38 @@ func (r *Range) Start() time.Time {
 
 func (r *Range) End() time.Time {
 	return r.end
+}
+
+func (r *Range) StartDate() *Date {
+	return DateWithTime(r.start)
+}
+
+func (r *Range) EndDate() *Date {
+	return DateWithTime(r.end.Add(-time.Nanosecond))
+}
+
+func (r *Range) StartsBefore(ra *Range) bool {
+	return r.start.Before(ra.start)
+}
+
+func (r *Range) EndsAfter(ra *Range) bool {
+	return r.end.After(ra.end)
+}
+
+func (r *Range) Includes(t time.Time) bool {
+	return !r.start.After(t) && t.Before(r.end)
+}
+
+func (r *Range) Duration() time.Duration {
+	return r.end.Sub(r.start)
+}
+
+func (r *Range) IsAllDay() bool {
+	return r.InDay() && r.Duration() == time.Hour*24
+}
+
+func (r *Range) InDay() bool {
+	return r.StartDate().Equals(r.EndDate())
 }
 
 func (r *Range) Dates() []*Date {
@@ -54,18 +97,19 @@ func (r *Range) Dates() []*Date {
 	return l
 }
 
-func (r *Range) SplitByDay() []*DayTimeRange {
+func (r *Range) SplitInDay() []*Range {
 	dates := r.Dates()
-	l := make([]*DayTimeRange, len(dates))
+	l := make([]*Range, len(dates))
+	startTime, endTime := GetDayTime(r.start), GetDayTime(r.end)
 	for i, d := range dates {
-		start, end := time.Duration(0), 24*time.Hour-time.Nanosecond
+		start, end := d.Start(), d.End()
 		if i == 0 {
-			start = GetDayTime(r.start)
+			start.Add(startTime)
 		}
 		if i == len(dates)-1 {
-			end = GetDayTime(r.end)
+			end.Add(endTime)
 		}
-		l[i] = NewDayTimeRange(d, start, end)
+		l[i] = NewRange(start, end)
 	}
 	return l
 }
@@ -99,7 +143,10 @@ var (
 	_ sql.Scanner   = (*Range)(nil)
 )
 
-const sqlTimeLayout = "2006-01-02 15:04:05.999999999-07"
+const (
+	sqlTimeLayout = "2006-01-02 15:04:05.999999999-07"
+	timeLayout    = "2006-01-02 15:04:05-07"
+)
 
 func (r *Range) Scan(src interface{}) error {
 	s, err := conv.ToString(src)
@@ -145,87 +192,6 @@ func (r Range) Value() (driver.Value, error) {
 	return fmt.Sprintf("[%s, %s]", r.start.Format(sqlTimeLayout), r.end.Format(sqlTimeLayout)), nil
 }
 
-type DayTimeRange struct {
-	date  *Date
-	start time.Duration
-	end   time.Duration
-}
-
-func NewDayTimeRange(date *Date, start, end time.Duration) *DayTimeRange {
-	endOfDay := time.Hour*24 - time.Nanosecond
-	if start < 0 || start > endOfDay {
-		panic("start must be in [0, 24h): " + fmt.Sprint(start))
-	}
-
-	if end < time.Minute || end > endOfDay {
-		panic("end must be 0 or in [1m, 24h): " + fmt.Sprint(end))
-	}
-
-	if end < start {
-		panic("expect: end >= start")
-	}
-
-	return &DayTimeRange{
-		date:  date,
-		start: start,
-		end:   end,
-	}
-}
-
-func (r *DayTimeRange) Date() *Date {
-	return r.date
-}
-
-func (r *DayTimeRange) Start() time.Duration {
-	return r.start
-}
-
-func (r *DayTimeRange) End() time.Duration {
-	return r.end
-}
-
-func (r *DayTimeRange) Duration() time.Duration {
-	return r.end - r.start + time.Nanosecond
-}
-
-func (r *DayTimeRange) IsAllDay() bool {
-	return r.Duration() == time.Hour*24
-}
-
-func (r *DayTimeRange) StartsBefore(dr *DayTimeRange) bool {
-	if r.date.Before(dr.date) {
-		return true
-	}
-
-	if r.date.After(dr.date) {
-		return false
-	}
-
-	return r.start < dr.start
-}
-
-func (r *DayTimeRange) StartsAfter(dr *DayTimeRange) bool {
-	return dr.StartsBefore(r)
-}
-
-func (r *DayTimeRange) EndsBefore(dr *DayTimeRange) bool {
-	if r.date.Before(dr.date) {
-		return true
-	}
-
-	if r.date.After(dr.date) {
-		return false
-	}
-
-	return r.end < dr.end
-}
-
-func (r *DayTimeRange) EndsAfter(dr *DayTimeRange) bool {
-	return dr.EndsBefore(r)
-}
-
-func (r *DayTimeRange) String() string {
-	sh, sm := int(r.start.Hours()), int(r.start.Minutes())%60
-	eh, em := int(r.end.Hours()), int(r.end.Minutes())%60
-	return fmt.Sprintf("%s %02d:%02d-%02d:%02d", r.date, sh, sm, eh, em)
+func (r *Range) String() string {
+	return fmt.Sprintf("[%s, %s)", r.start.Format(timeLayout), r.end.Format(timeLayout))
 }

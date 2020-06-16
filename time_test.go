@@ -81,6 +81,6 @@ func TestLenOfMonth(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		assert.Equal(t, test.Len, LenOfMonth(test.Year, test.Month), fmt.Sprintf("%v", test))
+		assert.Equal(t, test.Len, NewMonth(test.Year, test.Month).NumOfDays(), fmt.Sprintf("%v", test))
 	}
 }
