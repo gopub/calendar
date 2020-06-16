@@ -1,10 +1,11 @@
 package timex_test
 
 import (
-	"github.com/gopub/log"
-	"github.com/gopub/timex"
 	"testing"
 	"time"
+
+	"github.com/gopub/log"
+	"github.com/gopub/timex"
 )
 
 func TestRange_SplitInDay(t *testing.T) {
