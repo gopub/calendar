@@ -184,11 +184,13 @@ func (r *Range) Scan(src interface{}) error {
 	if r.start.After(r.end) {
 		return fmt.Errorf("start %v is after end %v", r.start, r.end)
 	}
+	r.start = r.start.Local()
+	r.end = r.end.Local()
 	return nil
 }
 
 func (r Range) Value() (driver.Value, error) {
-	return fmt.Sprintf("[%s, %s]", r.start.Format(sqlTimeLayout), r.end.Format(sqlTimeLayout)), nil
+	return fmt.Sprintf("[%s, %s]", r.start.UTC().Format(sqlTimeLayout), r.end.UTC().Format(sqlTimeLayout)), nil
 }
 
 func (r *Range) String() string {
