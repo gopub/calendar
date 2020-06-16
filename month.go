@@ -3,8 +3,8 @@ package timex
 import "time"
 
 type Month struct {
-	Year  int
-	Month int
+	Year  int `json:"year"`
+	Month int `json:"month"`
 }
 
 func NewMonth(y, m int) *Month {

@@ -1,8 +1,14 @@
 package timex
 
 import (
+	"encoding"
 	"fmt"
 	"time"
+)
+
+var (
+	_ encoding.TextMarshaler   = (*Date)(nil)
+	_ encoding.TextUnmarshaler = (*Date)(nil)
 )
 
 type Date struct {
@@ -104,4 +110,18 @@ func (d *Date) IsYesterday() bool {
 
 func (d *Date) String() string {
 	return fmt.Sprintf("%d-%02d-%02d", d.year, d.month, d.day)
+}
+
+func (d *Date) MarshalText() (text []byte, err error) {
+	return []byte(d.String()), nil
+}
+
+func (d *Date) UnmarshalText(text []byte) error {
+	s := string(text)
+	t, err := time.Parse("2006-01-02", s)
+	if err != nil {
+		return err
+	}
+	*d = *DateWithTime(t)
+	return nil
 }
