@@ -52,3 +52,16 @@ func (m *Month) Equals(month *Month) bool {
 func (m *Month) Includes(d *Date) bool {
 	return m.Year == d.year && m.Month == d.month
 }
+
+func (m *Month) Since(month *Month) int {
+	return 12*(m.Year-month.Year) + m.Month - month.Month
+}
+
+func (m *Month) Add(years, months int) *Month {
+	return NewMonth(m.Year+years, m.Month+months)
+}
+
+func CurrentMonth() *Month {
+	t := time.Now()
+	return NewMonth(t.Year(), int(t.Month()))
+}
