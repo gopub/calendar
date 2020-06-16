@@ -23,6 +23,8 @@ type Range struct {
 }
 
 func NewRange(start, end time.Time) *Range {
+	start = start.Local()
+	end = end.Local()
 	r := &Range{
 		start: start,
 		end:   end,
@@ -77,7 +79,7 @@ func (r *Range) IsAllDay() bool {
 
 func (r *Range) InDay() bool {
 	y1, m1, d1 := r.start.Date()
-	y2, m2, d2 := r.end.Date()
+	y2, m2, d2 := r.end.Add(-time.Nanosecond).Date()
 	return y1 == y2 && m1 == m2 && d1 == d2
 }
 
@@ -96,12 +98,15 @@ func (r *Range) SplitInDay() []*Range {
 	l := make([]*Range, len(dates))
 	startTime, endTime := GetDayTime(r.start), GetDayTime(r.end)
 	for i, d := range dates {
-		start, end := d.Start(), d.End()
+		start, end := d.Start(), d.End().Add(time.Nanosecond)
 		if i == 0 {
-			start.Add(startTime)
+			start = start.Add(startTime)
 		}
 		if i == len(dates)-1 {
-			end.Add(endTime)
+			if endTime == 0 {
+				endTime = Day
+			}
+			end = d.Start().Add(endTime)
 		}
 		l[i] = NewRange(start, end)
 	}
