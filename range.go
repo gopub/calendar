@@ -73,6 +73,10 @@ func (r *Range) Duration() time.Duration {
 	return r.end.Sub(r.start)
 }
 
+func (r *Range) AddDate(years, months, days int) *Range {
+	return NewRange(r.start.AddDate(years, months, days), r.end.AddDate(years, months, days))
+}
+
 func (r *Range) IsAllDay() bool {
 	return r.InDay() && r.Duration() == time.Hour*24
 }
