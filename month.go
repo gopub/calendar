@@ -58,6 +58,8 @@ func (m *Month) Since(month *Month) int {
 }
 
 func (m *Month) Add(years, months int) *Month {
+	years += months / 12
+	months %= 12
 	return NewMonth(m.Year+years, m.Month+months)
 }
 

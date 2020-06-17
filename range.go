@@ -3,7 +3,6 @@ package timex
 import (
 	"database/sql"
 	"database/sql/driver"
-	"encoding"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -13,8 +12,8 @@ import (
 )
 
 var (
-	_ encoding.TextMarshaler   = (*Range)(nil)
-	_ encoding.TextUnmarshaler = (*Range)(nil)
+	_ json.Marshaler   = (*Range)(nil)
+	_ json.Unmarshaler = (*Range)(nil)
 )
 
 type Range struct {
@@ -117,7 +116,21 @@ func (r *Range) SplitInDay() []*Range {
 	return l
 }
 
-func (r *Range) MarshalText() (text []byte, err error) {
+func (r *Range) UnmarshalJSON(b []byte) error {
+	var rr struct {
+		Start time.Time `json:"start"`
+		End   time.Time `json:"end"`
+	}
+	err := json.Unmarshal(b, &rr)
+	if err != nil {
+		return err
+	}
+	r.start = rr.Start
+	r.end = rr.End
+	return nil
+}
+
+func (r *Range) MarshalJSON() ([]byte, error) {
 	var rr struct {
 		Start time.Time `json:"start"`
 		End   time.Time `json:"end"`
@@ -125,20 +138,6 @@ func (r *Range) MarshalText() (text []byte, err error) {
 	rr.Start = r.start
 	rr.End = r.end
 	return json.Marshal(rr)
-}
-
-func (r *Range) UnmarshalText(text []byte) error {
-	var rr struct {
-		Start time.Time `json:"start"`
-		End   time.Time `json:"end"`
-	}
-	err := json.Unmarshal(text, &rr)
-	if err != nil {
-		return err
-	}
-	r.start = rr.Start
-	r.end = rr.End
-	return nil
 }
 
 var (

@@ -1,6 +1,7 @@
 package timex
 
 import (
+	"database/sql/driver"
 	"encoding"
 	"fmt"
 	"time"
@@ -124,4 +125,20 @@ func (d *Date) UnmarshalText(text []byte) error {
 	}
 	*d = *DateWithTime(t)
 	return nil
+}
+
+func (d *Date) Scan(src interface{}) error {
+	t, ok := src.(time.Time)
+	if !ok {
+		return fmt.Errorf("expect time.Time instead of %T", src)
+	}
+	*d = *DateWithTime(t)
+	return nil
+}
+
+func (d *Date) Value() (driver.Value, error) {
+	if d == nil {
+		return nil, nil
+	}
+	return d.t, nil
 }
