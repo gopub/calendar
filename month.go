@@ -1,6 +1,9 @@
 package timex
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Month struct {
 	Year  int `json:"year"`
@@ -8,11 +11,14 @@ type Month struct {
 }
 
 func NewMonth(y, m int) *Month {
+	if m < 0 {
+		panic(fmt.Sprintf("timex: month cannot be negative %d", m))
+	}
 	if m > 12 {
 		m = m % 12
-	}
-	if m < 1 {
-		m = 1
+	} else if m == 0 {
+		m = 12
+		y -= 1
 	}
 	return &Month{
 		Year:  y,
@@ -58,9 +64,15 @@ func (m *Month) Since(month *Month) int {
 }
 
 func (m *Month) Add(years, months int) *Month {
+	years += m.Year
+	months += m.Month
 	years += months / 12
 	months %= 12
-	return NewMonth(m.Year+years, m.Month+months)
+	if months < 0 {
+		years -= 1
+		months += 12
+	}
+	return NewMonth(years, months)
 }
 
 func CurrentMonth() *Month {
