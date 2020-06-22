@@ -199,3 +199,10 @@ func (r Range) Value() (driver.Value, error) {
 func (r *Range) String() string {
 	return fmt.Sprintf("[%s, %s)", r.start.Format(timeLayout), r.end.Format(timeLayout))
 }
+
+func (r *Range) In(loc *time.Location) *Range {
+	return &Range{
+		start: r.start.In(loc),
+		end:   r.end.In(loc),
+	}
+}
