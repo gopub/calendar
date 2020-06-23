@@ -90,7 +90,7 @@ func (r *Range) Dates() []*Date {
 	start := DateWithTime(r.start)
 	end := DateWithTime(r.end)
 	var l []*Date
-	for d := start; !d.After(end); d = d.Add(0, 0, 1) {
+	for d := start; d.Before(end); d = d.Add(0, 0, 1) {
 		l = append(l, d)
 	}
 	return l
