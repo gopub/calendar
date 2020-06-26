@@ -28,8 +28,8 @@ func NewRange(start, end time.Time) *Range {
 		start: start,
 		end:   end,
 	}
-	if !r.start.Before(r.end) {
-		panic("timex: start must be before end")
+	if r.start.After(r.end) {
+		panic("timex: require start <= end")
 	}
 	return r
 }
