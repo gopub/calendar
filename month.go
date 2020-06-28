@@ -11,6 +11,10 @@ var monthWeeksNum = &sync.Map{}
 type Month struct {
 	Year  int `json:"year"`
 	Month int `json:"month"`
+
+	// [4,7]*7 matrix
+	mu       sync.Mutex
+	calendar [][7]*Date
 }
 
 func NewMonth(y, m int) *Month {
@@ -79,18 +83,56 @@ func (m *Month) Add(years, months int) *Month {
 }
 
 func (m *Month) NumOfWeeks() int {
-	key := m.Year*100 + m.Month
-	if num, ok := monthWeeksNum.Load(key); ok {
-		return num.(int)
+	if m.calendar == nil {
+		_ = m.GetCalendarDate(1, 1)
 	}
-	firstWeekDays := int(7 - m.Begin().Weekday())
-	days := m.NumOfDays() - firstWeekDays
-	num := 1 + days/7
-	if days%7 != 0 {
-		num += 1
+	return len(m.calendar)
+}
+
+// GetCalendarDate: week is [1, NumOfWeeks], day is [1, 7]
+func (m *Month) GetCalendarDate(week, day int) *Date {
+	week -= 1
+	day -= 1
+	if m.calendar == nil {
+		m.mu.Lock()
+		if m.calendar == nil {
+			first := int(m.Begin().Weekday())
+			numOfDays := m.NumOfDays()
+			days := numOfDays - (7 - first)
+			lines := 1 + days/7
+			if days%7 != 0 {
+				lines += 1
+			}
+			m.calendar = make([][7]*Date, lines)
+			last := first + numOfDays - 1
+			for i := 0; i < lines; i++ {
+				for j := 0; j < 7; j++ {
+					offset := i*7 + j
+					if offset < first || offset > last {
+						m.calendar[i][j] = nil
+					} else {
+						m.calendar[i][j] = NewDate(m.Year, m.Month, offset-first+1)
+					}
+				}
+			}
+		}
+		m.mu.Unlock()
 	}
-	monthWeeksNum.Store(key, num)
-	return num
+	if week < 0 || week >= len(m.calendar) {
+		return nil
+	}
+	if day < 0 || day >= 7 {
+		return nil
+	}
+	return m.calendar[week][day]
+}
+
+func (m *Month) Date(day int) *Date {
+	return NewDate(m.Year, m.Month, day)
+}
+
+func (m *Month) String() string {
+	return fmt.Sprintf("%d-%d", m.Year, m.Month)
 }
 
 func CurrentMonth() *Month {
