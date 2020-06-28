@@ -2,8 +2,11 @@ package timex
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
+
+var monthWeeksNum = &sync.Map{}
 
 type Month struct {
 	Year  int `json:"year"`
@@ -73,6 +76,21 @@ func (m *Month) Add(years, months int) *Month {
 		months += 12
 	}
 	return NewMonth(years, months)
+}
+
+func (m *Month) NumOfWeeks() int {
+	key := m.Year*100 + m.Month
+	if num, ok := monthWeeksNum.Load(key); ok {
+		return num.(int)
+	}
+	firstWeekDays := int(7 - m.Begin().Weekday())
+	days := m.NumOfDays() - firstWeekDays
+	num := 1 + days/7
+	if days%7 != 0 {
+		num += 1
+	}
+	monthWeeksNum.Store(key, num)
+	return num
 }
 
 func CurrentMonth() *Month {
