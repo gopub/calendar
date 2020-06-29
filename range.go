@@ -64,16 +64,20 @@ func (r *Range) EndUnix() int64 {
 	return r.end.Unix()
 }
 
-func (r *Range) Overlap(ra *Range) bool {
-	subBegin := r.begin.Sub(ra.begin)
-	switch {
-	case subBegin < 0: // r.begin < ra.begin
-		return r.end.After(ra.begin) // r.end > ra.begin
-	case subBegin > 0: // r.begin > ra.begin
-		return !r.end.After(ra.end) // r.end <= ra.end
-	default: // r.begin == ra.begin
-		return true
-	}
+func (r *Range) Duration() time.Duration {
+	return r.end.Sub(r.begin)
+}
+
+func (r *Range) AddDate(years, months, days int) *Range {
+	return NewRange(r.begin.AddDate(years, months, days), r.end.AddDate(years, months, days))
+}
+
+func (r *Range) Before(ra *Range) bool {
+	return r.begin.Before(ra.begin)
+}
+
+func (r *Range) After(ra *Range) bool {
+	return r.begin.After(ra.begin)
 }
 
 func (r *Range) Equals(ra *Range) bool {
@@ -83,10 +87,6 @@ func (r *Range) Equals(ra *Range) bool {
 func (r *Range) Contains(ra *Range) bool {
 	// r.begin <= ra.begin && r.end >= ra.end
 	return !r.begin.After(ra.begin) && !r.end.Before(ra.end)
-}
-
-func (r *Range) ContainsTime(t time.Time) bool {
-	return !r.begin.After(t) && t.Before(r.end)
 }
 
 func (r *Range) Intersects(ra *Range) *Range {
@@ -103,12 +103,20 @@ func (r *Range) Intersects(ra *Range) *Range {
 	return NewRange(begin, end)
 }
 
-func (r *Range) Duration() time.Duration {
-	return r.end.Sub(r.begin)
+func (r *Range) Overlap(ra *Range) bool {
+	subBegin := r.begin.Sub(ra.begin)
+	switch {
+	case subBegin < 0: // r.begin < ra.begin
+		return r.end.After(ra.begin) // r.end > ra.begin
+	case subBegin > 0: // r.begin > ra.begin
+		return !r.end.After(ra.end) // r.end <= ra.end
+	default: // r.begin == ra.begin
+		return true
+	}
 }
 
-func (r *Range) AddDate(years, months, days int) *Range {
-	return NewRange(r.begin.AddDate(years, months, days), r.end.AddDate(years, months, days))
+func (r *Range) ContainsTime(t time.Time) bool {
+	return !r.begin.After(t) && t.Before(r.end)
 }
 
 func (r *Range) IsAllDay() bool {
