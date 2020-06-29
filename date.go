@@ -89,7 +89,7 @@ func (d *Date) After(date *Date) bool {
 	return d.Unix() > date.Unix()
 }
 
-func (d *Date) Start() time.Time {
+func (d *Date) Begin() time.Time {
 	return d.t
 }
 

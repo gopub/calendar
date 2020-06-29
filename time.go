@@ -32,10 +32,6 @@ func IsTomorrow(t time.Time) bool {
 	return DateWithTime(t).IsTomorrow()
 }
 
-func Unix(seconds int64) time.Time {
-	return time.Unix(seconds, 0)
-}
-
 func BeginOfDay(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.Local)
 }
