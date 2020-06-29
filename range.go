@@ -249,3 +249,18 @@ func (r *Range) In(loc *time.Location) *Range {
 		end:   r.end.In(loc),
 	}
 }
+
+func (r *Range) NextRepeat(repeat Repeat) *Range {
+	switch repeat {
+	case Daily:
+		return r.AddDate(0, 0, 1)
+	case Weekly:
+		return r.AddDate(0, 0, 7)
+	case Monthly:
+		return r.AddDate(0, 1, 0)
+	case Yearly:
+		return r.AddDate(1, 0, 0)
+	default:
+		return nil
+	}
+}

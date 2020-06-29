@@ -142,3 +142,18 @@ func (d *Date) Value() (driver.Value, error) {
 	}
 	return d.t, nil
 }
+
+func (d *Date) NextRepeat(r Repeat) *Date {
+	switch r {
+	case Daily:
+		return d.Add(0, 0, 1)
+	case Weekly:
+		return d.Add(0, 0, 7)
+	case Monthly:
+		return d.Add(0, 1, 0)
+	case Yearly:
+		return d.Add(1, 0, 0)
+	default:
+		return nil
+	}
+}
