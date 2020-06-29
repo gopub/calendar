@@ -56,6 +56,14 @@ func (r *Range) End() time.Time {
 	return r.end
 }
 
+func (r *Range) StartUnix() int64 {
+	return r.start.Unix()
+}
+
+func (r *Range) EndUnix() int64 {
+	return r.end.Unix()
+}
+
 func (r *Range) StartsBefore(ra *Range) bool {
 	return r.start.Before(ra.start)
 }
