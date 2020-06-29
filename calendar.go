@@ -19,6 +19,15 @@ const (
 var enRepeats = []string{"Never", "Daily", "Weekly", "Monthly", "Yearly"}
 var zhHansRepeats = []string{"不重复", "每日", "每年", "每月", "每年"}
 
+func (r Repeat) IsValid() bool {
+	switch r {
+	case Never, Daily, Weekly, Monthly, Yearly:
+		return true
+	default:
+		return false
+	}
+}
+
 func (r Repeat) String() string {
 	if r < Never || r > Yearly {
 		return fmt.Sprint(int(r))
