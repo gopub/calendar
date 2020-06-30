@@ -139,6 +139,18 @@ func (r *Range) Dates() []*Date {
 	return l
 }
 
+func (r *Range) Months() []*Month {
+	y, m, _ := r.begin.Date()
+	first := NewMonth(y, int(m))
+	y, m, _ = r.end.Date()
+	last := NewMonth(y, int(m))
+	var l []*Month
+	for v := first; !v.After(last); v.Add(0, 1) {
+		l = append(l, v)
+	}
+	return l
+}
+
 func (r *Range) SplitInDay() []*Range {
 	dates := r.Dates()
 	l := make([]*Range, len(dates))
@@ -260,6 +272,21 @@ func (r *Range) NextRepeat(repeat Repeat) *Range {
 		return r.AddDate(0, 1, 0)
 	case Yearly:
 		return r.AddDate(1, 0, 0)
+	default:
+		return nil
+	}
+}
+
+func (r *Range) PrevRepeat(repeat Repeat) *Range {
+	switch repeat {
+	case Daily:
+		return r.AddDate(0, 0, -1)
+	case Weekly:
+		return r.AddDate(0, 0, -7)
+	case Monthly:
+		return r.AddDate(0, -1, 0)
+	case Yearly:
+		return r.AddDate(-1, 0, 0)
 	default:
 		return nil
 	}

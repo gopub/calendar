@@ -89,6 +89,17 @@ func (m *Month) NumOfWeeks() int {
 	return len(m.calendar)
 }
 
+func (m *Month) Before(mo *Month) bool {
+	if m.Year == mo.Year {
+		return m.Month < mo.Month
+	}
+	return m.Year < mo.Year
+}
+
+func (m *Month) After(mo *Month) bool {
+	return mo.Before(m)
+}
+
 // GetCalendarDate: week is [1, NumOfWeeks], day is [1, 7]
 func (m *Month) GetCalendarDate(week, day int) *Date {
 	week -= 1
