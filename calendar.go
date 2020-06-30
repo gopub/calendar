@@ -44,7 +44,7 @@ func getLang() string {
 	if lang == "" {
 		lang = "en_US"
 	}
-	return lang
+	return strings.Replace(lang, "-", "_", -1)
 }
 
 var hansLangList = []string{"zh_CN", "zh_SG"}

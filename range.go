@@ -151,6 +151,33 @@ func (r *Range) Months() []*Month {
 	return l
 }
 
+func (r *Range) NumOfMonths() int {
+	y, m, _ := r.begin.Date()
+	first := NewMonth(y, int(m))
+	y, m, _ = r.end.Date()
+	last := NewMonth(y, int(m))
+	return last.Since(first) + 1
+}
+
+func (r *Range) IndexOfMonths(m *Month) int {
+	for i, mo := range r.Months() {
+		if mo.Equals(m) {
+			return i
+		}
+	}
+	return -1
+}
+
+func (r *Range) FirstMonth() *Month {
+	y, m, _ := r.begin.Date()
+	return NewMonth(y, int(m))
+}
+
+func (r *Range) LastMonth() *Month {
+	y, m, _ := r.end.Date()
+	return NewMonth(y, int(m))
+}
+
 func (r *Range) SplitInDay() []*Range {
 	dates := r.Dates()
 	l := make([]*Range, len(dates))
