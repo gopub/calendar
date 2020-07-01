@@ -348,35 +348,34 @@ func (r *Range) PrevRepeat(repeat Repeat) *Range {
 func (r *Range) RelativeText() string {
 	hans := IsSimplifiedChinese()
 	begin, end := r.BeginT(), r.EndT()
-	beginText := begin.Date().ShortRelativeText()
+	beginText := begin.Date().ShortText()
 	if !begin.IsBeginOfDay() {
 		beginText += " " + strings.ToLower(begin.TimeText())
 	}
-	endText := end.AddNanos(-1).Date().ShortRelativeText()
+	endText := end.AddNanos(-1).Date().ShortText()
 	if !end.IsBeginOfDay() {
 		endText += " " + strings.ToLower(end.TimeText())
 	}
 	if r.InDay() {
-		if r.IsAllDay() {
+		switch {
+		case r.IsAllDay():
 			if hans {
 				return beginText + "全天"
 			}
 			return beginText + " all day"
-		}
-		if begin.IsBeginOfDay() {
+		case begin.IsBeginOfDay():
 			if hans {
 				return endText + " 结束"
 			}
 			return endText + " ends"
-		}
-
-		if end.IsEndOfDay() {
+		case end.IsEndOfDay():
 			if hans {
 				return beginText + " 开始"
 			}
 			return beginText + " begins"
+		default:
+			return beginText + " - " + strings.ToLower(end.TimeText())
 		}
-		return beginText + " - " + strings.ToLower(end.TimeText())
 	}
 	if begin.Year() == end.Year() || end.Year()-1 == time.Now().Year() {
 		endText = strings.Replace(endText, fmt.Sprintf("%d-", begin.Year()), "", 1)

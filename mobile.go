@@ -161,7 +161,7 @@ func (t *Time) timeText(format string) string {
 }
 
 func (t *Time) RelativeDateTimeText() string {
-	return fmt.Sprintf("%s %s", t.Date().ShortRelativeText(), t.TimeTextWithZero())
+	return fmt.Sprintf("%s %s", t.Date().ShortText(), t.TimeTextWithZero())
 }
 
 func NewRangeT(begin, end *Time) *Range {

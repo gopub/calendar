@@ -118,7 +118,23 @@ func (d *Date) IsYesterday() bool {
 }
 
 func (d *Date) String() string {
-	return fmt.Sprintf("%d-%02d-%02d", d.year, d.month, d.day)
+	return fmt.Sprintf("%d/%d/%d", d.year, d.month, d.day)
+}
+
+func (d *Date) PrettyText() string {
+	var s string
+	if IsSimplifiedChinese() {
+		s = fmt.Sprintf("%d月%d日", d.month, d.day)
+	} else {
+		s = fmt.Sprintf("%s %d", time.Month(d.month).String()[:3], d.day)
+	}
+	if d.year == time.Now().Year() {
+		return s
+	}
+	if IsSimplifiedChinese() {
+		return fmt.Sprintf("%d年%s", d.year, s)
+	}
+	return fmt.Sprintf("%s, %d", s, d.year)
 }
 
 func (d *Date) MarshalText() (text []byte, err error) {
@@ -166,88 +182,54 @@ func (d *Date) NextRepeat(r Repeat) *Date {
 	}
 }
 
-func (d *Date) ShortRelativeText() string {
-	now := time.Now()
-	if d.Year() != now.Year() {
-		return fmt.Sprintf("%d-%d-%d", d.Year(), d.month, d.day)
-	}
-
-	delta := conv.AbsDuration(d.t.Sub(now))
-	if delta > 2*Day {
-		return fmt.Sprintf("%s %d-%d", GetWeekdaySymbol(d.weekday), d.month, d.day)
-	}
-
-	if IsSimplifiedChinese() {
-		switch {
-		case d.IsYesterday():
-			return "昨天"
-		case d.IsToday():
-			return "今天"
-		case d.IsTomorrow():
-			return "明天"
-		}
-	} else {
-		switch {
-		case d.IsYesterday():
-			return "Yesterday"
-		case d.IsToday():
-			return "Today"
-		case d.IsTomorrow():
-			return "Tomorrow"
+func (d *Date) ShortText() string {
+	if conv.AbsDuration(d.t.Sub(time.Now())) <= 2*Day {
+		if IsSimplifiedChinese() {
+			switch {
+			case d.IsYesterday():
+				return "昨天"
+			case d.IsToday():
+				return "今天"
+			case d.IsTomorrow():
+				return "明天"
+			}
+		} else {
+			switch {
+			case d.IsYesterday():
+				return "Yesterday"
+			case d.IsToday():
+				return "Today"
+			case d.IsTomorrow():
+				return "Tomorrow"
+			}
 		}
 	}
-	return fmt.Sprintf("%s %d-%d", GetWeekdaySymbol(d.weekday), d.month, d.day)
+	return fmt.Sprintf("%s %s", GetWeekdaySymbol(d.weekday), d.PrettyText())
 }
 
-func (d *Date) LongRelativeText() string {
-	now := time.Now()
-	weekday := GetWeekdaySymbol(d.weekday)
-	if d.Year() != now.Year() {
+func (d *Date) LongText() string {
+	if conv.AbsDuration(d.t.Sub(time.Now())) <= 2*Day {
 		if IsSimplifiedChinese() {
-			return fmt.Sprintf("%s %d年%d月%d日", weekday, d.year, d.month, d.day)
-		}
-		return now.Format("Mon Jan 02, 2006")
-	}
-
-	enMonth := time.Month(d.month).String()[:3]
-	delta := conv.AbsDuration(d.t.Sub(now))
-	if delta > 2*Day {
-		if IsSimplifiedChinese() {
-			return fmt.Sprintf("%s%d月%d日", weekday, d.month, d.day)
-		}
-		return fmt.Sprintf("%s %s %d", weekday, enMonth, d.day)
-	}
-
-	var s string
-	if IsSimplifiedChinese() {
-		s = fmt.Sprintf("%d月%d日", d.month, d.day)
-	} else {
-		s = fmt.Sprintf("%s %d", enMonth, d.day)
-	}
-
-	if IsSimplifiedChinese() {
-		switch {
-		case d.IsYesterday():
-			return "昨天" + s
-		case d.IsToday():
-			return "今天" + s
-		case d.IsTomorrow():
-			return "明天" + s
-		}
-	} else {
-		switch {
-		case d.IsYesterday():
-			return "Yesterday " + s
-		case d.IsToday():
-			return "Today " + s
-		case d.IsTomorrow():
-			return "Tomorrow " + s
+			switch {
+			case d.IsYesterday():
+				return "昨天 " + d.PrettyText()
+			case d.IsToday():
+				return "今天 " + d.PrettyText()
+			case d.IsTomorrow():
+				return "明天 " + d.PrettyText()
+			}
+		} else {
+			switch {
+			case d.IsYesterday():
+				return "Yesterday " + d.PrettyText()
+			case d.IsToday():
+				return "Today " + d.PrettyText()
+			case d.IsTomorrow():
+				return "Tomorrow " + d.PrettyText()
+			}
 		}
 	}
-	if IsSimplifiedChinese() {
-		return fmt.Sprintf("%s%d月%d日", weekday, d.month, d.day)
-	}
-	return fmt.Sprintf("%s %s %d", weekday, enMonth, d.day)
+	return fmt.Sprintf("%s %s", GetWeekdaySymbol(d.weekday), d.PrettyText())
 }
 
 func (d *Date) Range() *Range {
