@@ -3,6 +3,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/gopub/conv v0.3.0/go.mod h1:OAog+Vown+go6heGhEj/5dcPE5JjHMIaus5kLvvnzxE=
 github.com/gopub/conv v0.3.18 h1:ir657YtlpP6aSw4PlB1uQ1rMM76l3s0nhf7n9dksUtw=
 github.com/gopub/conv v0.3.18/go.mod h1:e6VjS83+vHUeWls8YHGfTw95V9oNC0PW0t+GqL1bc7M=
+github.com/gopub/conv v0.3.20 h1:bEbqFhJEiemHu+8E0VHkJUe+fzSqbLeO1EUJWXKLrXA=
+github.com/gopub/conv v0.3.20/go.mod h1:e6VjS83+vHUeWls8YHGfTw95V9oNC0PW0t+GqL1bc7M=
 github.com/gopub/log v1.2.0/go.mod h1:N7GzW/a2tgyQp/wSwd9YzUN5AbVB2G1yE7+nZUGL46A=
 github.com/gopub/log v1.2.2 h1:qP0ZWysd8U+EzIpYzNDvBbwYj6JN2F4d7Pn90XOM+Kg=
 github.com/gopub/log v1.2.2/go.mod h1:N7GzW/a2tgyQp/wSwd9YzUN5AbVB2G1yE7+nZUGL46A=

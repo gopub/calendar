@@ -1,6 +1,8 @@
 package timex
 
-import "time"
+import (
+	"time"
+)
 
 func IsLeap(year int) bool {
 	return year%4 == 0 && (year%100 != 0 || year%400 == 0)
@@ -44,3 +46,14 @@ const (
 	Day  = 24 * time.Hour
 	Week = 7 * 24 * time.Hour
 )
+
+var enWeekdaySymbols = [7]string{"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}
+var hansWeekdaySymbols = [7]string{"周日", "周一", "周二", "周三", "周四", "周五", "周六"}
+
+func GetWeekdaySymbol(d int) string {
+	d = d % 7
+	if isHans(getLang()) {
+		return hansWeekdaySymbols[d]
+	}
+	return enWeekdaySymbols[d]
+}

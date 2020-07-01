@@ -29,21 +29,21 @@ func NewRange(begin, end time.Time) *Range {
 		end:   end,
 	}
 	if r.begin.After(r.end) {
-		panic("timex: require begin <= end")
+		panic("timex: expect begin <= end")
 	}
 	return r
 }
 
 func (r *Range) SetBegin(t time.Time) {
-	if !t.Before(r.end) {
-		panic("timex: begin must be before end")
+	if t.After(r.end) {
+		panic("timex: expect begin <= end")
 	}
 	r.begin = t
 }
 
 func (r *Range) SetEnd(t time.Time) {
-	if !t.After(r.begin) {
-		panic("timex: end must be after begin")
+	if t.Before(r.begin) {
+		panic("timex: expect end >= begin")
 	}
 	r.end = t
 }
@@ -119,6 +119,16 @@ func (r *Range) ContainsTime(t time.Time) bool {
 	return !r.begin.After(t) && t.Before(r.end)
 }
 
+func (r *Range) ContainsDate(d *Date) bool {
+	if r.FirstDay().After(d) {
+		return false
+	}
+	if r.LastDay().Before(d) {
+		return false
+	}
+	return true
+}
+
 func (r *Range) IsAllDay() bool {
 	return r.InDay() && r.Duration() == time.Hour*24
 }
@@ -176,6 +186,14 @@ func (r *Range) FirstMonth() *Month {
 func (r *Range) LastMonth() *Month {
 	y, m, _ := r.end.Date()
 	return NewMonth(y, int(m))
+}
+
+func (r *Range) FirstDay() *Date {
+	return r.BeginT().Date()
+}
+
+func (r *Range) LastDay() *Date {
+	return r.EndT().AddNanos(-1).Date()
 }
 
 func (r *Range) SplitInDay() []*Range {
@@ -317,4 +335,35 @@ func (r *Range) PrevRepeat(repeat Repeat) *Range {
 	default:
 		return nil
 	}
+}
+
+func (r *Range) RelativeText() string {
+	hans := isHans(getLang())
+	begin, end := r.BeginT(), r.EndT().AddNanos(-1)
+	beginDateText := begin.Date().ShortRelativeText()
+	beginTimeText := strings.ToLower(begin.TimeTextWithSpace())
+	endTimeText := strings.ToLower(end.TimeTextWithSpace())
+	if r.InDay() {
+		if r.IsAllDay() {
+			if hans {
+				return beginDateText + "全天"
+			}
+			return beginDateText + " all day"
+		}
+		if begin.IsBeginOfDay() {
+			if hans {
+				return fmt.Sprintf("%s %s 结束", beginDateText, endTimeText)
+			}
+			return fmt.Sprintf("%s %s ends", beginDateText, endTimeText)
+		}
+
+		if end.IsEndOfDay() {
+			if hans {
+				return fmt.Sprintf("%s %s 开始", beginDateText, beginTimeText)
+			}
+			return fmt.Sprintf("%s %s begins", beginDateText, beginTimeText)
+		}
+		return fmt.Sprintf("%s %s - %s", beginDateText, beginTimeText, endTimeText)
+	}
+	return fmt.Sprintf("%s %s - %s %s", beginDateText, beginTimeText, end.Date().ShortRelativeText(), endTimeText)
 }

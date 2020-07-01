@@ -5,6 +5,8 @@ import (
 	"encoding"
 	"fmt"
 	"time"
+
+	"github.com/gopub/conv"
 )
 
 var (
@@ -75,6 +77,12 @@ func (d *Date) Unix() int64 {
 
 func (d *Date) Add(years, months, days int) *Date {
 	return DateWithTime(d.t.AddDate(years, months, days))
+}
+
+func (d *Date) Time(hours, minutes int) *Time {
+	return &Time{
+		t: d.t.Add(time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute),
+	}
 }
 
 func (d *Date) Equals(date *Date) bool {
@@ -156,4 +164,90 @@ func (d *Date) NextRepeat(r Repeat) *Date {
 	default:
 		return nil
 	}
+}
+
+func (d *Date) ShortRelativeText() string {
+	now := time.Now()
+	if d.Year() != now.Year() {
+		return fmt.Sprintf("%d-%d-%d", d.Year(), d.Month(), d.Day())
+	}
+
+	delta := conv.AbsDuration(d.t.Sub(now))
+	if delta > 2*Day {
+		return fmt.Sprintf("%s %d-%d", GetWeekdaySymbol(d.Weekday()), d.Month(), d.Day())
+	}
+
+	hans := isHans(getLang())
+	if hans {
+		switch {
+		case d.IsYesterday():
+			return "昨天"
+		case d.IsToday():
+			return "今天"
+		case d.IsTomorrow():
+			return "明天"
+		}
+	} else {
+		switch {
+		case d.IsYesterday():
+			return "Yesterday"
+		case d.IsToday():
+			return "Today"
+		case d.IsTomorrow():
+			return "Tomorrow"
+		}
+	}
+	return fmt.Sprintf("%s %d-%d", GetWeekdaySymbol(d.Weekday()), d.Month(), d.Day())
+}
+
+func (d *Date) LongRelativeText() string {
+	now := time.Now()
+	weekday := GetWeekdaySymbol(d.Weekday())
+	if d.Year() != now.Year() {
+		return fmt.Sprintf("%s %d-%d-%d", weekday, d.Year(), d.Month(), d.Day())
+	}
+
+	hans := isHans(getLang())
+	delta := conv.AbsDuration(d.t.Sub(now))
+	if delta > 2*Day {
+		if hans {
+			return fmt.Sprintf("%s%d月%d日", weekday, d.Month(), d.Day())
+		}
+		return fmt.Sprintf("%s %d-%d", weekday, d.Month(), d.Day())
+	}
+
+	var s string
+	if hans {
+		s = fmt.Sprintf("%d月%d日", d.Month(), d.Day())
+	} else {
+		s = fmt.Sprintf("%d-%d", d.Month(), d.Day())
+	}
+
+	if hans {
+		switch {
+		case d.IsYesterday():
+			return "昨天," + s
+		case d.IsToday():
+			return "今天," + s
+		case d.IsTomorrow():
+			return "明天," + s
+		}
+	} else {
+		switch {
+		case d.IsYesterday():
+			return "Yesterday, " + s
+		case d.IsToday():
+			return "Today, " + s
+		case d.IsTomorrow():
+			return "Tomorrow, " + s
+		}
+	}
+	if hans {
+		return fmt.Sprintf("%s%d月%d日", weekday, d.Month(), d.Day())
+	}
+	return fmt.Sprintf("%s %d-%d", weekday, d.Month(), d.Day())
+}
+
+func (d *Date) Range() *Range {
+	return NewRange(d.Begin(), d.End().Add(time.Nanosecond))
 }

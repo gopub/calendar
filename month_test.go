@@ -1,10 +1,11 @@
 package timex_test
 
 import (
+	"testing"
+
 	"github.com/gopub/timex"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestMonth_NumOfWeeks(t *testing.T) {
