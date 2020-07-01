@@ -146,6 +146,19 @@ func (m *Month) String() string {
 	return fmt.Sprintf("%d-%d", m.Year, m.Month)
 }
 
+func (m *Month) RelativeText() string {
+	if m.Year == time.Now().Year() {
+		if IsSimplifiedChinese() {
+			return fmt.Sprintf("%d月", m.Month)
+		}
+		return time.Month(m.Month).String()[:3]
+	}
+	if IsSimplifiedChinese() {
+		return fmt.Sprintf("%d年%d月", m.Year, m.Month)
+	}
+	return fmt.Sprintf("%s %d", time.Month(m.Month).String()[:3], m.Year)
+}
+
 func CurrentMonth() *Month {
 	t := time.Now()
 	return NewMonth(t.Year(), int(t.Month()))

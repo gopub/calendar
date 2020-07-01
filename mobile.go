@@ -128,15 +128,14 @@ func (t *Time) TimeTextWithSpace() string {
 }
 
 func (t *Time) timeText(format string) string {
-	lang := getLang()
-	if isHans(lang) {
+	if IsSimplifiedChinese() {
 		if t.IsEndOfDay() {
 			return "晚上12:00"
 		}
 		h, m := t.Hour(), t.Minute()
 		switch {
 		case h == 0:
-			return fmt.Sprintf("零点"+format, h, m)
+			return fmt.Sprintf("00:%02d", m)
 		case h < 12:
 			return fmt.Sprintf("上午"+format, h, m)
 		case h == 12:
@@ -171,6 +170,10 @@ func NewRangeT(begin, end *Time) *Range {
 
 func NewRangeInDay(d *Date) *Range {
 	return NewRange(d.Begin(), d.End().Add(time.Nanosecond))
+}
+
+func (r *Range) SetT(begin, end *Time) {
+	r.Set(begin.t, end.t)
 }
 
 func (r *Range) SetBeginT(t *Time) {

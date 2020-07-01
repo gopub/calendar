@@ -169,16 +169,15 @@ func (d *Date) NextRepeat(r Repeat) *Date {
 func (d *Date) ShortRelativeText() string {
 	now := time.Now()
 	if d.Year() != now.Year() {
-		return fmt.Sprintf("%d-%d-%d", d.Year(), d.Month(), d.Day())
+		return fmt.Sprintf("%d-%d-%d", d.Year(), d.month, d.day)
 	}
 
 	delta := conv.AbsDuration(d.t.Sub(now))
 	if delta > 2*Day {
-		return fmt.Sprintf("%s %d-%d", GetWeekdaySymbol(d.Weekday()), d.Month(), d.Day())
+		return fmt.Sprintf("%s %d-%d", GetWeekdaySymbol(d.weekday), d.month, d.day)
 	}
 
-	hans := isHans(getLang())
-	if hans {
+	if IsSimplifiedChinese() {
 		switch {
 		case d.IsYesterday():
 			return "昨天"
@@ -197,55 +196,58 @@ func (d *Date) ShortRelativeText() string {
 			return "Tomorrow"
 		}
 	}
-	return fmt.Sprintf("%s %d-%d", GetWeekdaySymbol(d.Weekday()), d.Month(), d.Day())
+	return fmt.Sprintf("%s %d-%d", GetWeekdaySymbol(d.weekday), d.month, d.day)
 }
 
 func (d *Date) LongRelativeText() string {
 	now := time.Now()
-	weekday := GetWeekdaySymbol(d.Weekday())
+	weekday := GetWeekdaySymbol(d.weekday)
 	if d.Year() != now.Year() {
-		return fmt.Sprintf("%s %d-%d-%d", weekday, d.Year(), d.Month(), d.Day())
+		if IsSimplifiedChinese() {
+			return fmt.Sprintf("%s %d年%d月%d日", weekday, d.year, d.month, d.day)
+		}
+		return now.Format("Mon Jan 02, 2006")
 	}
 
-	hans := isHans(getLang())
+	enMonth := time.Month(d.month).String()[:3]
 	delta := conv.AbsDuration(d.t.Sub(now))
 	if delta > 2*Day {
-		if hans {
-			return fmt.Sprintf("%s%d月%d日", weekday, d.Month(), d.Day())
+		if IsSimplifiedChinese() {
+			return fmt.Sprintf("%s%d月%d日", weekday, d.month, d.day)
 		}
-		return fmt.Sprintf("%s %d-%d", weekday, d.Month(), d.Day())
+		return fmt.Sprintf("%s %s %d", weekday, enMonth, d.day)
 	}
 
 	var s string
-	if hans {
-		s = fmt.Sprintf("%d月%d日", d.Month(), d.Day())
+	if IsSimplifiedChinese() {
+		s = fmt.Sprintf("%d月%d日", d.month, d.day)
 	} else {
-		s = fmt.Sprintf("%d-%d", d.Month(), d.Day())
+		s = fmt.Sprintf("%s %d", enMonth, d.day)
 	}
 
-	if hans {
+	if IsSimplifiedChinese() {
 		switch {
 		case d.IsYesterday():
-			return "昨天," + s
+			return "昨天" + s
 		case d.IsToday():
-			return "今天," + s
+			return "今天" + s
 		case d.IsTomorrow():
-			return "明天," + s
+			return "明天" + s
 		}
 	} else {
 		switch {
 		case d.IsYesterday():
-			return "Yesterday, " + s
+			return "Yesterday " + s
 		case d.IsToday():
-			return "Today, " + s
+			return "Today " + s
 		case d.IsTomorrow():
-			return "Tomorrow, " + s
+			return "Tomorrow " + s
 		}
 	}
-	if hans {
-		return fmt.Sprintf("%s%d月%d日", weekday, d.Month(), d.Day())
+	if IsSimplifiedChinese() {
+		return fmt.Sprintf("%s%d月%d日", weekday, d.month, d.day)
 	}
-	return fmt.Sprintf("%s %d-%d", weekday, d.Month(), d.Day())
+	return fmt.Sprintf("%s %s %d", weekday, enMonth, d.day)
 }
 
 func (d *Date) Range() *Range {

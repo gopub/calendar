@@ -34,6 +34,14 @@ func NewRange(begin, end time.Time) *Range {
 	return r
 }
 
+func (r *Range) Set(begin, end time.Time) {
+	r.begin = begin.Local()
+	r.end = end.Local()
+	if r.begin.After(r.end) {
+		panic("timex: expect begin <= end")
+	}
+}
+
 func (r *Range) SetBegin(t time.Time) {
 	if t.After(r.end) {
 		panic("timex: expect begin <= end")
@@ -338,32 +346,40 @@ func (r *Range) PrevRepeat(repeat Repeat) *Range {
 }
 
 func (r *Range) RelativeText() string {
-	hans := isHans(getLang())
-	begin, end := r.BeginT(), r.EndT().AddNanos(-1)
-	beginDateText := begin.Date().ShortRelativeText()
-	beginTimeText := strings.ToLower(begin.TimeTextWithSpace())
-	endTimeText := strings.ToLower(end.TimeTextWithSpace())
+	hans := IsSimplifiedChinese()
+	begin, end := r.BeginT(), r.EndT()
+	beginText := begin.Date().ShortRelativeText()
+	if !begin.IsBeginOfDay() {
+		beginText += " " + strings.ToLower(begin.TimeText())
+	}
+	endText := end.AddNanos(-1).Date().ShortRelativeText()
+	if !end.IsBeginOfDay() {
+		endText += " " + strings.ToLower(end.TimeText())
+	}
 	if r.InDay() {
 		if r.IsAllDay() {
 			if hans {
-				return beginDateText + "全天"
+				return beginText + "全天"
 			}
-			return beginDateText + " all day"
+			return beginText + " all day"
 		}
 		if begin.IsBeginOfDay() {
 			if hans {
-				return fmt.Sprintf("%s %s 结束", beginDateText, endTimeText)
+				return endText + " 结束"
 			}
-			return fmt.Sprintf("%s %s ends", beginDateText, endTimeText)
+			return endText + " ends"
 		}
 
 		if end.IsEndOfDay() {
 			if hans {
-				return fmt.Sprintf("%s %s 开始", beginDateText, beginTimeText)
+				return beginText + " 开始"
 			}
-			return fmt.Sprintf("%s %s begins", beginDateText, beginTimeText)
+			return beginText + " begins"
 		}
-		return fmt.Sprintf("%s %s - %s", beginDateText, beginTimeText, endTimeText)
+		return beginText + " - " + strings.ToLower(end.TimeText())
 	}
-	return fmt.Sprintf("%s %s - %s %s", beginDateText, beginTimeText, end.Date().ShortRelativeText(), endTimeText)
+	if begin.Year() == end.Year() || end.Year()-1 == time.Now().Year() {
+		endText = strings.Replace(endText, fmt.Sprintf("%d-", begin.Year()), "", 1)
+	}
+	return beginText + " - " + endText
 }

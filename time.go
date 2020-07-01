@@ -52,7 +52,7 @@ var hansWeekdaySymbols = [7]string{"周日", "周一", "周二", "周三", "周�
 
 func GetWeekdaySymbol(d int) string {
 	d = d % 7
-	if isHans(getLang()) {
+	if IsSimplifiedChinese() {
 		return hansWeekdaySymbols[d]
 	}
 	return enWeekdaySymbols[d]

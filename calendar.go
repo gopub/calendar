@@ -2,7 +2,6 @@ package timex
 
 import (
 	"fmt"
-	"os"
 	"strings"
 )
 
@@ -32,28 +31,39 @@ func (r Repeat) String() string {
 	if r < Never || r > Yearly {
 		return fmt.Sprint(int(r))
 	}
-	lang := getLang()
-	if isHans(lang) {
+	if IsSimplifiedChinese() {
 		return zhHansRepeats[r]
 	}
 	return enRepeats[r]
 }
 
-func getLang() string {
-	lang := os.Getenv("LANG")
-	if lang == "" {
-		lang = "en_US"
+type langT int
+
+const (
+	english = iota
+	simplifiedChinese
+	traditionalChinese
+)
+
+var lang langT = english
+
+func SetLang(l string) {
+	l = strings.ToLower(l)
+	strings.Replace(l, "-", "_", -1)
+	switch {
+	case strings.Contains(l, "hans"):
+		lang = simplifiedChinese
+	case strings.Contains(l, "zh_cn"):
+		lang = simplifiedChinese
+	case strings.Contains(l, "zh_sg"):
+		lang = simplifiedChinese
 	}
-	return strings.Replace(lang, "-", "_", -1)
 }
 
-var hansLangList = []string{"zh_CN", "zh_SG"}
+func IsSimplifiedChinese() bool {
+	return lang == simplifiedChinese
+}
 
-func isHans(lang string) bool {
-	for _, s := range hansLangList {
-		if strings.Contains(lang, s) {
-			return true
-		}
-	}
-	return false
+func IsTraditionalChinese() bool {
+	return lang == traditionalChinese
 }
