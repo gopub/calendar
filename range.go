@@ -368,7 +368,7 @@ func (r *Range) RelativeText() string {
 				return endText + " 结束"
 			}
 			return endText + " ends"
-		case end.IsEndOfDay():
+		case end.IsEndOfDay() || begin.Equals(end):
 			if hans {
 				return beginText + " 开始"
 			}
