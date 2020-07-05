@@ -16,7 +16,7 @@ const (
 )
 
 var enRepeats = []string{"Never", "Daily", "Weekly", "Monthly", "Yearly"}
-var zhHansRepeats = []string{"不重复", "每日", "每年", "每月", "每年"}
+var zhHansRepeats = []string{"不重复", "每天", "每年", "每月", "每年"}
 
 func (r Repeat) IsValid() bool {
 	switch r {
