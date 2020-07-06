@@ -363,12 +363,14 @@ func (r *Range) RelativeText() string {
 				return beginText + "全天"
 			}
 			return beginText + " all day"
+		case begin.Equals(end):
+			return beginText
 		case begin.IsBeginOfDay():
 			if hans {
 				return endText + " 结束"
 			}
 			return endText + " ends"
-		case end.IsEndOfDay() || begin.Equals(end):
+		case end.IsEndOfDay():
 			if hans {
 				return beginText + " 开始"
 			}
